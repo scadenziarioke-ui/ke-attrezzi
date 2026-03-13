@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KE Group — Gestionale Attrezzi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0F1710;--s1:#141E14;--s2:#1A271A;--s3:#1F2F1F;--s4:#253125;--bdr:rgba(255,255,255,0.08);--bdh:rgba(255,255,255,0.16);--bdf:rgba(78,203,116,0.5);--grn:#4ECB74;--gd:rgba(78,203,116,0.12);--gg:rgba(78,203,116,0.25);--amb:#F5A623;--ad:rgba(245,166,35,0.12);--red:#F05A52;--rd:rgba(240,90,82,0.12);--blu:#60A5FA;--bd:rgba(96,165,250,0.12);--t1:#ECF5EC;--t2:#94AA94;--t3:#566A56}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-size:14px;height:100vh;overflow:hidden;line-height:1.5}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(78,203,116,0.06) 0%,transparent 60%);pointer-events:none;z-index:0}
+.app{display:flex;height:100vh;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:14px 13px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:9px;flex-shrink:0}
+.sb-logo{width:30px;height:30px;background:linear-gradient(135deg,var(--grn),#3aad5e);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 0 1px rgba(78,203,116,0.3),0 3px 12px var(--gg)}
+.sb-logo svg{width:16px;height:16px}
+.sb-name{font-family:'DM Serif Display',serif;font-size:14px;color:var(--t1);line-height:1.1}
+.sb-name em{font-style:italic;color:var(--grn)}
+.sb-sub{font-size:9px;color:var(--t3);font-family:'DM Mono',monospace;margin-top:1px}
+.sb-nav{flex:1;overflow-y:auto;padding:8px 8px}
+.sb-nav::-webkit-scrollbar{width:3px}
+.sb-nav::-webkit-scrollbar-thumb{background:var(--s4);border-radius:99px}
+.sb-sec-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--t3);padding:8px 8px 4px}
+.ni{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;transition:all .14s;font-size:12px;font-weight:500;color:var(--t3);border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;position:relative;white-space:nowrap}
+.ni:hover{background:var(--s3);color:var(--t2)}
+.ni.act{background:var(--gd);color:var(--grn)}
+.ni.act::before{content:'';position:absolute;left:0;top:20%;height:60%;width:2px;background:var(--grn);border-radius:0 2px 2px 0}
+.ni svg{width:14px;height:14px;flex-shrink:0}
+.ni-cnt{margin-left:auto;font-family:'DM Mono',monospace;font-size:9px;padding:1px 5px;border-radius:99px;background:var(--s4);color:var(--t3)}
+.ni.act .ni-cnt{background:rgba(78,203,116,0.15);color:var(--grn)}
+.sb-stats{border-top:1px solid var(--bdr);padding:9px 13px;flex-shrink:0;display:flex;flex-direction:column;gap:4px}
+.sb-stat{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.sb-stat-lbl{color:var(--t3)}
+.sb-stat-n{font-family:'DM Mono',monospace;font-weight:500}
+.sb-stat-n.ok{color:var(--grn)}.sb-stat-n.warn{color:var(--amb)}.sb-stat-n.crit{color:var(--red)}
+.sb-foot{border-top:1px solid var(--bdr);padding:6px 8px;flex-shrink:0}
+.sb-link{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;text-decoration:none;color:var(--t3);font-size:12px;transition:all .14s}
+.sb-link:hover{background:var(--s3);color:var(--t2)}
+.sb-link svg{width:13px;height:13px;flex-shrink:0}
+
+/* ── MAIN ── */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--bdr);background:rgba(15,23,16,0.9);backdrop-filter:blur(16px) saturate(1.4);flex-shrink:0;gap:12px;z-index:50}
+.tb-l{display:flex;align-items:center;gap:6px;min-width:0}
+.bc{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t3);font-family:'DM Mono',monospace}
+.bc-sep{opacity:.4}
+.bc-cur{color:var(--t1);font-weight:500}
+.tb-r{display:flex;gap:7px;align-items:center;flex-shrink:0}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;border-radius:8px;transition:all .15s;white-space:nowrap}
+.btn-g{background:transparent;border:1px solid var(--bdh);color:var(--t2)}
+.btn-g:hover{background:var(--s3);color:var(--t1)}
+.btn-p{background:var(--grn);color:#081208;font-weight:600}
+.btn-p:hover{background:#5fd885;transform:translateY(-1px);box-shadow:0 5px 18px var(--gg)}
+.btn-d{background:transparent;border:1px solid var(--red);color:var(--red)}
+.btn-d:hover{background:var(--red);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+.ib{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--bdr);border-radius:7px;cursor:pointer;color:var(--t3);transition:all .14s;flex-shrink:0}
+.ib:hover{background:var(--s3);border-color:var(--bdh);color:var(--t1)}
+.ib.del:hover{border-color:var(--red);color:var(--red);background:var(--rd)}
+.ib.edit:hover{border-color:var(--grn);color:var(--grn);background:var(--gd)}
+.ib.check:hover{border-color:var(--grn);color:var(--grn);background:var(--gd)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:var(--s4);border-radius:99px}
+.page{display:none}
+.page.act{display:flex;flex-direction:column;gap:12px}
+
+/* STATS ROW */
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sc{background:var(--s2);border:1px solid var(--bdr);border-radius:13px;padding:16px 18px;position:relative;overflow:hidden;transition:all .18s;cursor:default}
+.sc:hover{border-color:var(--bdh);transform:translateY(-1px)}
+.sc::before{content:'';position:absolute;bottom:0;right:0;width:60px;height:60px;border-radius:50%;opacity:.06;transform:translate(18px,18px)}
+.sc.g::before{background:var(--grn)}.sc.o::before{background:var(--amb)}.sc.r::before{background:var(--red)}.sc.b::before{background:var(--blu)}
+.sn{font-family:'DM Serif Display',serif;font-size:36px;line-height:1;letter-spacing:-.02em;margin-bottom:3px}
+.sc.g .sn{color:var(--grn)}.sc.o .sn{color:var(--amb)}.sc.r .sn{color:var(--red)}.sc.b .sn{color:var(--blu)}
+.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)}
+.ss{font-size:11px;color:var(--t3);margin-top:4px;font-family:'DM Mono',monospace}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.srch{flex:1;min-width:160px;position:relative}
+.srch svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
+.srch input{width:100%;background:var(--s2);border:1px solid var(--bdh);color:var(--t1);padding:8px 12px 8px 32px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s}
+.srch input:focus{border-color:var(--bdf);box-shadow:0 0 0 3px rgba(78,203,116,0.07)}
+.srch input::placeholder{color:var(--t3)}
+.fsel{background:var(--s2);border:1px solid var(--bdh);color:var(--t1);padding:8px 26px 8px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23566A56' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-color:var(--s2);transition:border-color .15s}
+.fsel:focus{border-color:var(--bdf);outline:none}
+.fsel option{background:var(--s2)}
+
+/* TABLE */
+.twrap{background:var(--s2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s3)}
+th{text-align:left;padding:9px 14px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--bdr);white-space:nowrap}
+tbody tr{border-top:1px solid var(--bdr);transition:background .1s}
+tbody tr:hover{background:rgba(78,203,116,0.025)}
+td{padding:10px 14px;font-size:13px;vertical-align:middle}
+.cod{font-family:'DM Mono',monospace;font-size:10px;color:var(--t3)}
+.nome{font-weight:500;color:var(--t1)}
+.sub{font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;margin-top:1px}
+.qty{font-family:'DM Mono',monospace;font-weight:700;font-size:15px}
+.qty.g{color:var(--grn)}.qty.o{color:var(--amb)}.qty.r{color:var(--red)}
+.cat{display:inline-block;padding:2px 7px;background:var(--s4);border:1px solid var(--bdr);border-radius:4px;font-size:10px;color:var(--t2);font-family:'DM Mono',monospace}
+.ra{display:flex;gap:3px;justify-content:flex-end}
+
+/* STATUS PILLS */
+.sp{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.sp::before{content:'';width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.sp.ok{background:var(--gd);color:var(--grn);border:1px solid rgba(78,203,116,0.2)}.sp.ok::before{background:var(--grn)}
+.sp.cant{background:var(--rd);color:var(--red);border:1px solid rgba(240,90,82,0.2)}.sp.cant::before{background:var(--red)}
+.sp.warn{background:var(--ad);color:var(--amb);border:1px solid rgba(245,166,35,0.2)}.sp.warn::before{background:var(--amb)}
+.sp.fuori{background:var(--s3);color:var(--t3);border:1px solid var(--bdr)}.sp.fuori::before{background:var(--t3)}
+.sp.attivo{background:var(--gd);color:var(--grn);border:1px solid rgba(78,203,116,0.2)}.sp.attivo::before{background:var(--grn)}
+.sp.chiuso{background:var(--s3);color:var(--t3);border:1px solid var(--bdr)}.sp.chiuso::before{background:var(--t3)}
+.sp.blu{background:var(--bd);color:var(--blu);border:1px solid rgba(96,165,250,0.2)}.sp.blu::before{background:var(--blu)}
+
+/* CARDS (cantieri / operatori) */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.dc{background:var(--s2);border:1px solid var(--bdr);border-radius:11px;padding:16px;transition:all .18s;position:relative;overflow:hidden;animation:cin .25s ease both}
+.dc:hover{transform:translateY(-2px);border-color:var(--bdh);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.dc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.dc.ok::before{background:var(--grn)}.dc.cant::before{background:var(--red)}.dc.blu::before{background:var(--blu)}.dc.gray::before{background:var(--t3)}
+.dc-cod{font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);margin-bottom:3px}
+.dc-nome{font-weight:600;color:var(--t1);font-size:14px;margin-bottom:10px;line-height:1.3}
+.dc-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)}
+.dc-meta{font-size:11px;color:var(--t3);font-family:'DM Mono',monospace}
+
+/* AVATAR operatori */
+.op-av{width:40px;height:40px;border-radius:8px;background:var(--s4);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:16px;color:var(--grn);margin-bottom:10px;flex-shrink:0}
+
+/* DASHBOARD CHART */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dash-card{background:var(--s2);border:1px solid var(--bdr);border-radius:11px;padding:16px}
+.dash-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:14px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bar-lbl{width:140px;font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.bar-track{flex:1;height:18px;background:var(--s3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.bar-fill.g{background:var(--gd);color:var(--grn);border:1px solid rgba(78,203,116,0.2)}
+.bar-fill.r{background:var(--rd);color:var(--red);border:1px solid rgba(240,90,82,0.2)}
+
+/* REGISTRO rows */
+.reg-wrap{background:var(--s2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden}
+.reg-head{display:grid;grid-template-columns:90px 1fr 1fr 1fr 50px 110px 110px 100px 60px;gap:6px;padding:9px 14px;background:var(--s3);border-bottom:2px solid var(--bdr)}
+.reg-th{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)}
+.reg-row{display:grid;grid-template-columns:90px 1fr 1fr 1fr 50px 110px 110px 100px 60px;gap:6px;padding:9px 14px;border-top:1px solid var(--bdr);transition:background .1s;align-items:center;font-size:12px}
+.reg-row:hover{background:rgba(78,203,116,0.02)}
+
+/* SITUAZIONE */
+.sit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.sit-card{background:var(--s2);border:1px solid var(--bdr);border-radius:8px;padding:11px 13px}
+.sit-nome{font-weight:500;font-size:12px;color:var(--t1);margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sit-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-bottom:5px;gap:1px}
+.sit-c{background:var(--red);border-radius:2px 0 0 2px}
+.sit-m{background:var(--grn);border-radius:0 2px 2px 0}
+.sit-n{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px}
+.sit-nc{color:var(--red)}.sit-nm{color:var(--grn)}.sit-nt{color:var(--t3)}
+
+/* EMPTY */
+.es{padding:48px 20px;text-align:center;color:var(--t3)}
+.ei{font-size:30px;margin-bottom:10px;opacity:.4}
+.et{font-size:14px;color:var(--t2);font-weight:500;margin-bottom:4px;font-family:'DM Serif Display',serif}
+.esb{font-size:12px;line-height:1.7}
+
+/* MODAL */
+.bk{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px) saturate(.8);display:flex;align-items:center;justify-content:center;z-index:400;padding:18px;animation:fi .2s}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.modal{background:var(--s2);border:1px solid var(--bdh);border-radius:16px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:si .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 12px 60px rgba(0,0,0,.55)}
+@keyframes si{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.modal-sm{max-width:380px}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.mt{font-family:'DM Serif Display',serif;font-size:18px;color:var(--t1)}
+.mc{width:28px;height:28px;background:var(--s3);border:1px solid var(--bdr);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:14px;transition:all .14s}
+.mc:hover{background:var(--s4);color:var(--t1)}
+.mf{display:flex;gap:7px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr)}
+.fld{margin-bottom:13px}
+.fld label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--t3);margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--s3);border:1px solid var(--bdr);color:var(--t1);padding:9px 11px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .16s,box-shadow .16s;-webkit-appearance:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--bdf);box-shadow:0 0 0 3px rgba(78,203,116,0.07)}
+.fld input::placeholder,.fld textarea::placeholder{color:var(--t3)}
+.fld select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23566A56' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:28px;background-color:var(--s3)}
+.fld select option{background:var(--s2)}
+.fld textarea{resize:vertical;min-height:64px;line-height:1.5}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.modal-info{background:var(--s3);border-radius:8px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--t2);line-height:1.6}
+.modal-info strong{color:var(--t1)}
+
+/* TOAST */
+.tstack{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:6px;z-index:1000}
+.toast{background:var(--s2);border:1px solid var(--bdh);border-radius:9px;padding:10px 14px;font-size:13px;color:var(--t1);box-shadow:0 4px 20px rgba(0,0,0,.4);display:flex;align-items:center;gap:8px;animation:tin .26s cubic-bezier(.34,1.56,.64,1);border-left:3px solid var(--grn);max-width:300px}
+.toast.err{border-left-color:var(--red)}.toast.warn{border-left-color:var(--amb)}
+@keyframes tin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.tx{margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;font-size:12px;padding:0 2px;transition:color .14s}
+.tx:hover{color:var(--t1)}
+@keyframes cin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+mark{background:rgba(78,203,116,0.18);color:var(--t1);border-radius:2px;padding:0 1px}
+@media(max-width:900px){.sidebar{display:none}.topbar{padding:10px 14px}.content{padding:12px 14px}.sgrid{grid-template-columns:repeat(2,1fr)}.dash-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.f2{grid-template-columns:1fr}.sgrid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-head">
+    <div class="sb-logo">
+      <svg fill="none" viewBox="0 0 16 16"><path d="M13 3.5l-5.5 5.5-2-2L4 8.5l3.5 3.5 7-7L13 3.5z" fill="#081208"/></svg>
+    </div>
+    <div>
+      <div class="sb-name">KE <em>Group</em></div>
+      <div class="sb-sub">Gestionale Attrezzi</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec-lbl">Sezioni</div>
+    <button class="ni act" onclick="showPage('dashboard',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="ni" onclick="showPage('attrezzi',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+      Attrezzi
+      <span class="ni-cnt" id="nb-att">—</span>
+    </button>
+    <button class="ni" onclick="showPage('cantieri',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+      Cantieri
+      <span class="ni-cnt" id="nb-cant">—</span>
+    </button>
+    <button class="ni" onclick="showPage('operatori',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Operatori
+      <span class="ni-cnt" id="nb-op">—</span>
+    </button>
+    <button class="ni" onclick="showPage('registro',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Registro Uscite
+      <span class="ni-cnt" id="nb-reg">—</span>
+    </button>
+    <button class="ni" onclick="showPage('situazione',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Situazione Attuale
+    </button>
+  </nav>
+  <div class="sb-stats" id="sbStats">
+    <div class="sb-stat"><span class="sb-stat-lbl">Caricamento…</span></div>
+  </div>
+  <div class="sb-foot">
+    <a href="/logout" class="sb-link">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Esci
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="tb-l">
+      <div class="bc">
+        <span>Gestionale</span>
+        <span class="bc-sep">/</span>
+        <span class="bc-cur" id="bcCur">Dashboard</span>
+      </div>
+    </div>
+    <div class="tb-r">
+      <button class="btn btn-g btn-sm" id="tbExp" style="display:none" onclick="expCSV()">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+        Esporta
+      </button>
+      <button class="btn btn-p" id="tbAdd" style="display:none" onclick="openAdd()">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        <span id="tbAddLbl">Aggiungi</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page act" id="p-dashboard">
+      <div class="sgrid">
+        <div class="sc g"><div class="sn" id="d-tot">—</div><div class="sl">Attrezzi</div><div class="ss">tipi in inventario</div></div>
+        <div class="sc g"><div class="sn" id="d-mag">—</div><div class="sl">In Magazzino</div><div class="ss">disponibili ora</div></div>
+        <div class="sc r"><div class="sn" id="d-cant">—</div><div class="sl">In Cantiere</div><div class="ss">attualmente fuori</div></div>
+        <div class="sc o"><div class="sn" id="d-mov">—</div><div class="sl">Movimenti Attivi</div><div class="ss">uscite in corso</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-card"><div class="dash-card-title">Attrezzi per categoria</div><div id="catChart"></div></div>
+        <div class="dash-card"><div class="dash-card-title">Attrezzi fuori per cantiere</div><div id="cantChart"></div></div>
+      </div>
+    </div>
+
+    <!-- ATTREZZI -->
+    <div class="page" id="p-attrezzi">
+      <div class="toolbar">
+        <div class="srch"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="att-q" placeholder="Cerca attrezzo, codice, marca…" oninput="filterAttrezzi()"></div>
+        <select class="fsel" id="att-cat" onchange="filterAttrezzi()"><option value="">Tutte le categorie</option></select>
+        <select class="fsel" id="att-stato" onchange="filterAttrezzi()"><option value="">Tutti gli stati</option><option value="disp">✅ Disponibile</option><option value="cant">🔴 In Cantiere</option><option value="man">⚠️ Manutenzione</option><option value="fuori">❌ Fuori Uso</option></select>
+      </div>
+      <div class="twrap"><table><thead><tr><th>Codice</th><th>Nome Attrezzo</th><th>Categoria</th><th>Qtà</th><th>Stato</th><th>Note</th><th></th></tr></thead><tbody id="att-tb"></tbody></table></div>
+    </div>
+
+    <!-- CANTIERI -->
+    <div class="page" id="p-cantieri">
+      <div class="cgrid" id="cant-grid"></div>
+    </div>
+
+    <!-- OPERATORI -->
+    <div class="page" id="p-operatori">
+      <div class="cgrid" id="op-grid"></div>
+    </div>
+
+    <!-- REGISTRO -->
+    <div class="page" id="p-registro">
+      <div class="toolbar">
+        <div class="srch"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="reg-q" placeholder="Cerca attrezzo, cantiere, operatore…" oninput="filterReg()"></div>
+        <select class="fsel" id="reg-stato" onchange="filterReg()"><option value="">Tutti gli stati</option><option value="cantiere">🔴 In Cantiere</option><option value="rientrato">✅ Rientrato</option></select>
+        <select class="fsel" id="reg-cant" onchange="filterReg()"><option value="">Tutti i cantieri</option></select>
+      </div>
+      <div class="reg-wrap">
+        <div class="reg-head"><div class="reg-th">ID</div><div class="reg-th">Attrezzo</div><div class="reg-th">Cantiere</div><div class="reg-th">Operatore</div><div class="reg-th">Qtà</div><div class="reg-th">Uscita</div><div class="reg-th">Rientro Prev.</div><div class="reg-th">Stato</div><div class="reg-th"></div></div>
+        <div id="reg-rows"></div>
+      </div>
+    </div>
+
+    <!-- SITUAZIONE -->
+    <div class="page" id="p-situazione">
+      <div style="display:flex;gap:14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);margin-bottom:8px">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--red);border-radius:2px;display:inline-block"></span>In Cantiere</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--grn);border-radius:2px;display:inline-block"></span>In Magazzino</span>
+      </div>
+      <div class="sit-grid" id="sit-grid"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="tstack" id="ts"></div>
+
+<!-- MODAL ATTREZZO -->
+<div class="bk" id="mAtt" style="display:none" onclick="bkc(event,'mAtt')">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mAttTitle">Nuovo Attrezzo</div><button class="mc" onclick="cm('mAtt')">✕</button></div>
+    <input type="hidden" id="a-id">
+    <div class="fld"><label>Nome *</label><input type="text" id="a-nome" placeholder="es. Trapano Makita 18V"></div>
+    <div class="f2">
+      <div class="fld"><label>Categoria</label><select id="a-cat"><option>Manuale</option><option>Elettrico</option><option>Misura</option><option>Pneumatico</option><option>Sicurezza</option><option>Trasporto</option><option>Accesso</option><option>Energia</option><option>Saldatura</option><option>Accessori</option></select></div>
+      <div class="fld"><label>Qtà Totale</label><input type="number" id="a-qty" min="0" value="1"></div>
+    </div>
+    <div class="f2">
+      <div class="fld"><label>Marca / Modello</label><input type="text" id="a-marca" placeholder="es. Makita, Bosch…"></div>
+      <div class="fld"><label>Stato</label><select id="a-stato"><option value="disp">✅ Disponibile</option><option value="cant">🔴 In Cantiere</option><option value="man">⚠️ Manutenzione</option><option value="fuori">❌ Fuori Uso</option></select></div>
+    </div>
+    <div class="fld"><label>Note / Stato Fisico</label><textarea id="a-note" placeholder="Condizioni, osservazioni…"></textarea></div>
+    <div class="mf"><button class="btn btn-g" onclick="cm('mAtt')">Annulla</button><button class="btn btn-p" onclick="saveAtt()"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Salva</button></div>
+  </div>
+</div>
+
+<!-- MODAL CANTIERE -->
+<div class="bk" id="mCant" style="display:none" onclick="bkc(event,'mCant')">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mCantTitle">Nuovo Cantiere</div><button class="mc" onclick="cm('mCant')">✕</button></div>
+    <input type="hidden" id="c-id">
+    <div class="fld"><label>Nome / Indirizzo *</label><input type="text" id="c-nome" placeholder="es. Cantiere Via Roma 14, Milano"></div>
+    <div class="f2">
+      <div class="fld"><label>Data Inizio</label><input type="date" id="c-inizio"></div>
+      <div class="fld"><label>Data Fine Prevista</label><input type="date" id="c-fine"></div>
+    </div>
+    <div class="fld"><label>Stato</label><select id="c-stato"><option value="attivo">🟢 Attivo</option><option value="pausa">🔵 In Pausa</option><option value="piano">🟡 In Pianificazione</option><option value="chiuso">🔴 Chiuso</option></select></div>
+    <div class="mf"><button class="btn btn-g" onclick="cm('mCant')">Annulla</button><button class="btn btn-p" onclick="saveCant()">Salva</button></div>
+  </div>
+</div>
+
+<!-- MODAL OPERATORE -->
+<div class="bk" id="mOp" style="display:none" onclick="bkc(event,'mOp')">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mOpTitle">Nuovo Operatore</div><button class="mc" onclick="cm('mOp')">✕</button></div>
+    <input type="hidden" id="op-id">
+    <div class="f2">
+      <div class="fld"><label>Nome *</label><input type="text" id="op-nome" placeholder="Mario"></div>
+      <div class="fld"><label>Cognome</label><input type="text" id="op-cogn" placeholder="Rossi"></div>
+    </div>
+    <div class="f2">
+      <div class="fld"><label>Ruolo</label><select id="op-ruolo"><option>Capo Cantiere</option><option>Operaio Specializzato</option><option>Magazziniere</option><option>Gruista</option><option>Elettricista</option></select></div>
+      <div class="fld"><label>Telefono</label><input type="text" id="op-tel" placeholder="+39 333 …"></div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="cm('mOp')">Annulla</button><button class="btn btn-p" onclick="saveOp()">Salva</button></div>
+  </div>
+</div>
+
+<!-- MODAL MOVIMENTO -->
+<div class="bk" id="mMov" style="display:none" onclick="bkc(event,'mMov')">
+  <div class="modal">
+    <div class="mh"><div class="mt">Registra Uscita</div><button class="mc" onclick="cm('mMov')">✕</button></div>
+    <div class="fld"><label>Attrezzo *</label><select id="m-att"></select></div>
+    <div class="f2">
+      <div class="fld"><label>Cantiere *</label><select id="m-cant"></select></div>
+      <div class="fld"><label>Operatore *</label><select id="m-op"></select></div>
+    </div>
+    <div class="f2">
+      <div class="fld"><label>Quantità</label><input type="number" id="m-qty" min="1" value="1"></div>
+      <div class="fld"><label>Data Uscita *</label><input type="date" id="m-data"></div>
+    </div>
+    <div class="fld"><label>Data Rientro Prevista</label><input type="date" id="m-rprev"></div>
+    <div class="fld"><label>Note</label><textarea id="m-note" placeholder="Eventuali note, danni…"></textarea></div>
+    <div class="mf"><button class="btn btn-g" onclick="cm('mMov')">Annulla</button><button class="btn btn-p" onclick="saveMov()"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Registra</button></div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINA -->
+<div class="bk" id="mDel" style="display:none" onclick="bkc(event,'mDel')">
+  <div class="modal modal-sm">
+    <div class="mh"><div class="mt">Elimina</div><button class="mc" onclick="cm('mDel')">✕</button></div>
+    <p style="color:var(--t2);font-size:13px;line-height:1.6">Vuoi eliminare <strong id="del-n" style="color:var(--t1)"></strong>?</p>
+    <div class="mf"><button class="btn btn-g" onclick="cm('mDel')">Annulla</button><button class="btn btn-d" onclick="confDel()">Elimina</button></div>
+  </div>
+</div>
+
+<!-- MODAL RIENTRO -->
+<div class="bk" id="mRientro" style="display:none" onclick="bkc(event,'mRientro')">
+  <div class="modal modal-sm">
+    <div class="mh"><div class="mt">Registra Rientro</div><button class="mc" onclick="cm('mRientro')">✕</button></div>
+    <input type="hidden" id="r-id">
+    <div class="modal-info">Attrezzo: <strong id="r-nome"></strong></div>
+    <div class="fld"><label>Data Rientro Effettivo *</label><input type="date" id="r-data"></div>
+    <div class="mf"><button class="btn btn-g" onclick="cm('mRientro')">Annulla</button><button class="btn btn-p" onclick="confRientro()"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Conferma</button></div>
+  </div>
+</div>
+
+<script>
+var attrezzi=[], cantieri=[], operatori=[], movimenti=[];
+var curPage='dashboard';
+var delTarget=null;
+var _loading=false;
+
+// ── UTILS ────────────────────────────────────────────────────────────────────
+function e(s){return(s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fd(s){if(!s||s==='None')return'—';try{var p=s.split('T')[0].split('-');return p[2]+'/'+p[1]+'/'+p[0];}catch(er){return s;}}
+function today(){return new Date().toISOString().split('T')[0];}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg,type){
+  var st=document.getElementById('ts');var el=document.createElement('div');
+  el.className='toast'+(type==='err'?' err':type==='warn'?' warn':'');
+  el.innerHTML='<span style="flex:1">'+msg+'</span><button class="tx" onclick="this.parentElement.remove()">×</button>';
+  st.appendChild(el);setTimeout(function(){el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(function(){el.remove();},320);},4000);
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function sm(id){document.getElementById(id).style.display='flex';}
+function cm(id){document.getElementById(id).style.display='none';}
+function bkc(ev,id){if(ev.target.id===id)cm(id);}
+document.addEventListener('keydown',function(ev){
+  if(ev.key==='Escape')['mAtt','mCant','mOp','mMov','mDel','mRientro'].forEach(cm);
+  if((ev.ctrlKey||ev.metaKey)&&ev.key==='n'){ev.preventDefault();openAdd();}
+});
+
+// ── PAGE NAV ─────────────────────────────────────────────────────────────────
+var pageLabels={dashboard:'Dashboard',attrezzi:'Attrezzi',cantieri:'Cantieri',operatori:'Operatori',registro:'Registro Uscite',situazione:'Situazione Attuale'};
+function showPage(pg,btn){
+  curPage=pg;
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('act');});
+  document.getElementById('p-'+pg).classList.add('act');
+  document.querySelectorAll('.ni').forEach(function(b){b.classList.remove('act');});
+  if(btn)btn.classList.add('act');
+  document.getElementById('bcCur').textContent=pageLabels[pg]||pg;
+  var addBtn=document.getElementById('tbAdd');var expBtn=document.getElementById('tbExp');
+  addBtn.style.display=(pg==='situazione'||pg==='dashboard')?'none':'flex';
+  expBtn.style.display=(pg==='attrezzi'||pg==='registro')?'flex':'none';
+  var lbls={attrezzi:'Nuovo Attrezzo',cantieri:'Nuovo Cantiere',operatori:'Nuovo Operatore',registro:'Registra Uscita'};
+  if(lbls[pg])document.getElementById('tbAddLbl').textContent=lbls[pg];
+  if(pg==='attrezzi')renderAttrezzi();
+  else if(pg==='cantieri')renderCantieri();
+  else if(pg==='operatori')renderOperatori();
+  else if(pg==='registro')renderRegistro();
+  else if(pg==='situazione')renderSituazione();
+  else renderDashboard();
+}
+
+// ── STATO ────────────────────────────────────────────────────────────────────
+function spBadge(s){
+  var map={disp:"<span class='sp ok'>Disponibile</span>",cant:"<span class='sp cant'>In Cantiere</span>",man:"<span class='sp warn'>Manutenzione</span>",fuori:"<span class='sp fuori'>Fuori Uso</span>",cantiere:"<span class='sp cant'>In Cantiere</span>",rientrato:"<span class='sp ok'>Rientrato</span>",attivo:"<span class='sp attivo'>Attivo</span>",pausa:"<span class='sp blu'>In Pausa</span>",piano:"<span class='sp warn'>Pianificazione</span>",chiuso:"<span class='sp chiuso'>Chiuso</span>"};
+  return map[s]||"<span class='sp fuori'>"+e(s)+"</span>";
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────────────
+async function loadAll(){
+  if(_loading)return;_loading=true;
+  try{
+    var [ra,rc,ro,rm,rs]=await Promise.all([
+      fetch('/api/attrezzi').then(function(r){return r.json();}),
+      fetch('/api/cantieri').then(function(r){return r.json();}),
+      fetch('/api/operatori').then(function(r){return r.json();}),
+      fetch('/api/movimenti').then(function(r){return r.json();}),
+      fetch('/api/stats').then(function(r){return r.json();})
+    ]);
+    attrezzi=ra;cantieri=rc;operatori=ro;movimenti=rm;
+    document.getElementById('nb-att').textContent=attrezzi.length;
+    document.getElementById('nb-cant').textContent=cantieri.length;
+    document.getElementById('nb-op').textContent=operatori.length;
+    document.getElementById('nb-reg').textContent=movimenti.filter(function(m){return m.stato==='cantiere';}).length;
+    document.getElementById('sbStats').innerHTML=
+      '<div class="sb-stat"><span class="sb-stat-lbl">Totale attrezzi</span><span class="sb-stat-n ok">'+attrezzi.length+'</span></div>'+
+      '<div class="sb-stat"><span class="sb-stat-lbl">In magazzino</span><span class="sb-stat-n ok">'+rs.in_mag+'</span></div>'+
+      '<div class="sb-stat"><span class="sb-stat-lbl">In cantiere</span><span class="sb-stat-n crit">'+rs.in_cant+'</span></div>'+
+      '<div class="sb-stat"><span class="sb-stat-lbl">Cantieri attivi</span><span class="sb-stat-n warn">'+rs.cant_att+'</span></div>';
+    // Fill stats
+    document.getElementById('d-tot').textContent=rs.tot;
+    document.getElementById('d-mag').textContent=rs.in_mag;
+    document.getElementById('d-cant').textContent=rs.in_cant;
+    document.getElementById('d-mov').textContent=rs.mov_att;
+    // Charts
+    var maxC=rs.cats.length?rs.cats[0].n:1;
+    document.getElementById('catChart').innerHTML=rs.cats.map(function(c){
+      var p=Math.round(c.n/maxC*100);
+      return '<div class="bar-row"><div class="bar-lbl">'+e(c.categoria)+'</div><div class="bar-track"><div class="bar-fill g" style="width:'+p+'%">'+c.n+'</div></div></div>';
+    }).join('');
+    var maxM=rs.cant_mov.length?rs.cant_mov[0].tot:1;
+    document.getElementById('cantChart').innerHTML=rs.cant_mov.length?rs.cant_mov.map(function(c){
+      var p=Math.round(c.tot/maxM*100);
+      return '<div class="bar-row"><div class="bar-lbl">'+e(c.cantiere_nome)+'</div><div class="bar-track"><div class="bar-fill r" style="width:'+p+'%">'+c.tot+'</div></div></div>';
+    }).join(''):'<div style="color:var(--t3);font-size:12px;padding:8px 0">Nessun attrezzo fuori</div>';
+    // Update cat filter
+    var cats=[...new Set(attrezzi.map(function(a){return a.categoria;}))].sort();
+    var sel=document.getElementById('att-cat');var cv=sel.value;
+    sel.innerHTML='<option value="">Tutte le categorie</option>'+cats.map(function(c){return'<option value="'+e(c)+'">'+e(c)+'</option>';}).join('');
+    if(cv)sel.value=cv;
+    // Update registro filters
+    var cn=[...new Set(movimenti.map(function(m){return m.cantiere_nome;}).filter(Boolean))].sort();
+    var rsel=document.getElementById('reg-cant');var rv=rsel.value;
+    rsel.innerHTML='<option value="">Tutti i cantieri</option>'+cn.map(function(c){return'<option value="'+e(c)+'">'+e(c)+'</option>';}).join('');
+    if(rv)rsel.value=rv;
+    // Re-render current page
+    if(curPage!=='dashboard')showPage(curPage,null);
+  }catch(err){toast('Errore caricamento dati','err');}
+  _loading=false;
+}
+
+// ── RENDER ATTREZZI ───────────────────────────────────────────────────────────
+function filterAttrezzi(){renderAttrezzi();}
+function renderAttrezzi(){
+  var q=document.getElementById('att-q').value.trim().toLowerCase();
+  var cat=document.getElementById('att-cat').value;
+  var stato=document.getElementById('att-stato').value;
+  var list=attrezzi.filter(function(a){
+    return(!q||a.nome.toLowerCase().includes(q)||a.codice.toLowerCase().includes(q)||(a.marca&&a.marca.toLowerCase().includes(q)))
+      &&(!cat||a.categoria===cat)&&(!stato||a.stato===stato);
+  });
+  var tb=document.getElementById('att-tb');
+  if(!list.length){tb.innerHTML='<tr><td colspan="7"><div class="es"><div class="ei">🔧</div><div class="et">Nessun attrezzo trovato</div><div class="esb">Modifica i filtri o aggiungi un nuovo attrezzo</div></div></td></tr>';return;}
+  tb.innerHTML=list.map(function(a,i){
+    var qc=a.stato==='cant'?'r':a.stato==='fuori'?'r':'g';
+    return'<tr style="animation:cin .2s ease '+(i*.01)+'s both">'+
+      '<td><span class="cod">'+e(a.codice)+'</span></td>'+
+      '<td><div class="nome">'+e(a.nome)+'</div>'+(a.marca?'<div class="sub">'+e(a.marca)+'</div>':'')+'</td>'+
+      '<td><span class="cat">'+e(a.categoria)+'</span></td>'+
+      '<td><span class="qty '+qc+'">'+a.qty_tot+'</span></td>'+
+      '<td>'+spBadge(a.stato)+'</td>'+
+      '<td style="color:var(--t3);font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(a.note?e(a.note):'—')+'</td>'+
+      '<td><div class="ra">'+
+        '<button class="ib edit" onclick="editAtt('+a.id+')" title="Modifica"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>'+
+        '<button class="ib del" onclick="opDel(\'att\','+a.id+',\''+e(a.nome)+'\')" title="Elimina"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>'+
+      '</div></td></tr>';
+  }).join('');
+}
+
+// ── RENDER CANTIERI ───────────────────────────────────────────────────────────
+function renderCantieri(){
+  document.getElementById('cant-grid').innerHTML=cantieri.map(function(c){
+    var st=c.stato==='attivo'?'ok':c.stato==='chiuso'?'gray':c.stato==='pausa'?'blu':'cant';
+    var nMov=movimenti.filter(function(m){return m.cantiere_id===c.id&&m.stato==='cantiere';}).length;
+    return'<div class="dc '+st+'">'+
+      '<div class="dc-cod">'+e(c.codice)+'</div>'+
+      '<div class="dc-nome">'+e(c.nome)+'</div>'+
+      '<div class="dc-foot">'+spBadge(c.stato)+
+        '<span class="dc-meta">'+nMov+' attrezzi fuori</span>'+
+        '<div class="ra">'+
+          '<button class="ib edit" onclick="editCant('+c.id+')" title="Modifica"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>'+
+          '<button class="ib del" onclick="opDel(\'cant\','+c.id+',\''+e(c.nome)+'\')" title="Elimina"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>'+
+        '</div>'+
+      '</div>'+
+      (c.data_inizio||c.data_fine?'<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--t3);margin-top:8px">'+fd(c.data_inizio)+' → '+fd(c.data_fine)+'</div>':'')+
+    '</div>';
+  }).join('')||'<div class="es"><div class="ei">🏗️</div><div class="et">Nessun cantiere</div><div class="esb">Aggiungi il primo cantiere</div></div>';
+}
+
+// ── RENDER OPERATORI ──────────────────────────────────────────────────────────
+function renderOperatori(){
+  document.getElementById('op-grid').innerHTML=operatori.map(function(op){
+    var nMov=movimenti.filter(function(m){return m.operatore_id===op.id&&m.stato==='cantiere';}).length;
+    var init=(op.nome||'?').substring(0,2);
+    return'<div class="dc ok">'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
+        '<div class="op-av" style="margin:0">'+e(init)+'</div>'+
+        '<div><div class="dc-cod">'+e(op.codice)+'</div><div class="dc-nome" style="margin:0;font-size:14px">'+e(op.nome)+(op.cognome?' '+e(op.cognome):'')+'</div></div>'+
+      '</div>'+
+      spBadge('attivo').replace('Attivo',e(op.ruolo))+
+      (op.telefono?'<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--t3);margin-top:6px">'+e(op.telefono)+'</div>':'')+
+      '<div class="dc-foot" style="margin-top:10px">'+
+        '<span class="dc-meta">'+nMov+' attrezzi in uso</span>'+
+        '<div class="ra">'+
+          '<button class="ib edit" onclick="editOp('+op.id+')" title="Modifica"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>'+
+          '<button class="ib del" onclick="opDel(\'op\','+op.id+',\''+e(op.nome)+'\')" title="Elimina"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('')||'<div class="es"><div class="ei">👷</div><div class="et">Nessun operatore</div><div class="esb">Aggiungi il primo operatore</div></div>';
+}
+
+// ── RENDER REGISTRO ───────────────────────────────────────────────────────────
+function filterReg(){renderRegistro();}
+function renderRegistro(){
+  var q=document.getElementById('reg-q').value.trim().toLowerCase();
+  var stato=document.getElementById('reg-stato').value;
+  var cant=document.getElementById('reg-cant').value;
+  var list=movimenti.filter(function(m){
+    return(!q||(m.attrezzo_nome&&m.attrezzo_nome.toLowerCase().includes(q))||(m.cantiere_nome&&m.cantiere_nome.toLowerCase().includes(q))||(m.operatore_nome&&m.operatore_nome.toLowerCase().includes(q))||m.codice.toLowerCase().includes(q))
+      &&(!stato||m.stato===stato)
+      &&(!cant||m.cantiere_nome===cant);
+  });
+  var rows=document.getElementById('reg-rows');
+  if(!list.length){rows.innerHTML='<div class="es"><div class="ei">📋</div><div class="et">Nessun movimento trovato</div></div>';return;}
+  rows.innerHTML=list.map(function(m,i){
+    var btn=m.stato==='cantiere'?'<button class="ib check" onclick="opRientro('+m.id+')" title="Registra Rientro"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4M7 2v4M17 2v4M3 8h18"/></svg></button>':'';
+    return'<div class="reg-row" style="animation:cin .2s ease '+(i*.01)+'s both">'+
+      '<div><span class="cod">'+e(m.codice)+'</span></div>'+
+      '<div class="nome" style="font-size:12px">'+e(m.attrezzo_nome||'—')+'</div>'+
+      '<div style="color:var(--t2);font-size:12px">'+e(m.cantiere_nome||'—')+'</div>'+
+      '<div style="color:var(--t2);font-size:12px">'+e(m.operatore_nome||'—')+'</div>'+
+      '<div><span class="qty g" style="font-size:13px">'+m.qty+'</span></div>'+
+      '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--t2)">'+fd(m.data_uscita)+'</div>'+
+      '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--t3)">'+fd(m.data_rientro_prev)+'</div>'+
+      '<div>'+spBadge(m.stato)+'</div>'+
+      '<div><div class="ra">'+btn+'<button class="ib del" onclick="opDel(\'mov\','+m.id+',\''+e(m.attrezzo_nome||'')+'\')" title="Elimina"><svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div></div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── RENDER SITUAZIONE ─────────────────────────────────────────────────────────
+function renderSituazione(){
+  var inCant={};
+  movimenti.filter(function(m){return m.stato==='cantiere';}).forEach(function(m){
+    if(m.attrezzo_nome) inCant[m.attrezzo_nome]=(inCant[m.attrezzo_nome]||0)+m.qty;
+  });
+  document.getElementById('sit-grid').innerHTML=attrezzi.filter(function(a){return a.qty_tot>0;}).map(function(a){
+    var qc=inCant[a.nome]||0;var qm=Math.max(0,a.qty_tot-qc);
+    var pc=a.qty_tot>0?Math.round(qc/a.qty_tot*100):0;var pm=100-pc;
+    return'<div class="sit-card">'+
+      '<div class="sit-nome" title="'+e(a.nome)+'">'+e(a.nome)+'</div>'+
+      '<div class="sit-bar"><div class="sit-c" style="width:'+pc+'%"></div><div class="sit-m" style="width:'+pm+'%"></div></div>'+
+      '<div class="sit-n"><span class="sit-nc">'+qc+' cant.</span><span class="sit-nt">'+a.qty_tot+' tot</span><span class="sit-nm">'+qm+' mag.</span></div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── ADD / OPEN ────────────────────────────────────────────────────────────────
+function openAdd(){
+  if(curPage==='attrezzi'){
+    document.getElementById('a-id').value='';document.getElementById('a-nome').value='';
+    document.getElementById('a-cat').value='Manuale';document.getElementById('a-qty').value=1;
+    document.getElementById('a-marca').value='';document.getElementById('a-stato').value='disp';
+    document.getElementById('a-note').value='';
+    document.getElementById('mAttTitle').textContent='Nuovo Attrezzo';
+    sm('mAtt');setTimeout(function(){document.getElementById('a-nome').focus();},80);
+  }else if(curPage==='cantieri'){
+    document.getElementById('c-id').value='';document.getElementById('c-nome').value='';
+    document.getElementById('c-inizio').value='';document.getElementById('c-fine').value='';
+    document.getElementById('c-stato').value='attivo';
+    document.getElementById('mCantTitle').textContent='Nuovo Cantiere';
+    sm('mCant');setTimeout(function(){document.getElementById('c-nome').focus();},80);
+  }else if(curPage==='operatori'){
+    document.getElementById('op-id').value='';document.getElementById('op-nome').value='';
+    document.getElementById('op-cogn').value='';document.getElementById('op-tel').value='';
+    document.getElementById('op-ruolo').value='Operaio Specializzato';
+    document.getElementById('mOpTitle').textContent='Nuovo Operatore';
+    sm('mOp');setTimeout(function(){document.getElementById('op-nome').focus();},80);
+  }else if(curPage==='registro'){
+    document.getElementById('m-att').innerHTML=attrezzi.map(function(a){return'<option value="'+e(a.nome)+'">'+e(a.nome)+' ['+e(a.codice)+']</option>';}).join('');
+    document.getElementById('m-cant').innerHTML=cantieri.map(function(c){return'<option value="'+e(c.nome)+'">'+e(c.nome)+'</option>';}).join('');
+    document.getElementById('m-op').innerHTML=operatori.map(function(op){return'<option value="'+e(op.nome)+'">'+e(op.nome)+(op.cognome?' '+e(op.cognome):'')+'</option>';}).join('');
+    document.getElementById('m-data').value=today();
+    document.getElementById('m-qty').value=1;document.getElementById('m-rprev').value='';document.getElementById('m-note').value='';
+    sm('mMov');
+  }
+}
+
+// ── EDIT ─────────────────────────────────────────────────────────────────────
+function editAtt(id){
+  var a=attrezzi.find(function(x){return x.id===id;});if(!a)return;
+  document.getElementById('a-id').value=a.id;document.getElementById('a-nome').value=a.nome;
+  document.getElementById('a-cat').value=a.categoria;document.getElementById('a-qty').value=a.qty_tot;
+  document.getElementById('a-marca').value=a.marca||'';document.getElementById('a-stato').value=a.stato;
+  document.getElementById('a-note').value=a.note||'';
+  document.getElementById('mAttTitle').textContent='Modifica Attrezzo';
+  sm('mAtt');
+}
+function editCant(id){
+  var c=cantieri.find(function(x){return x.id===id;});if(!c)return;
+  document.getElementById('c-id').value=c.id;document.getElementById('c-nome').value=c.nome;
+  document.getElementById('c-inizio').value=c.data_inizio?c.data_inizio.split('T')[0]:'';
+  document.getElementById('c-fine').value=c.data_fine?c.data_fine.split('T')[0]:'';
+  document.getElementById('c-stato').value=c.stato;
+  document.getElementById('mCantTitle').textContent='Modifica Cantiere';
+  sm('mCant');
+}
+function editOp(id){
+  var op=operatori.find(function(x){return x.id===id;});if(!op)return;
+  document.getElementById('op-id').value=op.id;document.getElementById('op-nome').value=op.nome;
+  document.getElementById('op-cogn').value=op.cognome||'';document.getElementById('op-ruolo').value=op.ruolo;
+  document.getElementById('op-tel').value=op.telefono||'';
+  document.getElementById('mOpTitle').textContent='Modifica Operatore';
+  sm('mOp');
+}
+
+// ── SAVE ─────────────────────────────────────────────────────────────────────
+async function saveAtt(){
+  var id=document.getElementById('a-id').value;
+  var nome=document.getElementById('a-nome').value.trim();
+  if(!nome){toast('Inserisci il nome','warn');return;}
+  var body={nome:nome,categoria:document.getElementById('a-cat').value,marca:document.getElementById('a-marca').value.trim()||null,qty_tot:parseInt(document.getElementById('a-qty').value)||0,note:document.getElementById('a-note').value.trim()||null,stato:document.getElementById('a-stato').value};
+  try{
+    var r=await fetch(id?'/api/attrezzi/'+id:'/api/attrezzi',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error();cm('mAtt');toast(id?'Attrezzo aggiornato':'Attrezzo aggiunto');loadAll();
+  }catch(err){toast('Errore salvataggio','err');}
+}
+async function saveCant(){
+  var id=document.getElementById('c-id').value;
+  var nome=document.getElementById('c-nome').value.trim();
+  if(!nome){toast('Inserisci il nome','warn');return;}
+  var body={nome:nome,data_inizio:document.getElementById('c-inizio').value||null,data_fine:document.getElementById('c-fine').value||null,stato:document.getElementById('c-stato').value};
+  try{
+    var r=await fetch(id?'/api/cantieri/'+id:'/api/cantieri',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error();cm('mCant');toast(id?'Cantiere aggiornato':'Cantiere aggiunto');loadAll();
+  }catch(err){toast('Errore salvataggio','err');}
+}
+async function saveOp(){
+  var id=document.getElementById('op-id').value;
+  var nome=document.getElementById('op-nome').value.trim();
+  if(!nome){toast('Inserisci il nome','warn');return;}
+  var body={nome:nome,cognome:document.getElementById('op-cogn').value.trim()||null,ruolo:document.getElementById('op-ruolo').value,telefono:document.getElementById('op-tel').value.trim()||null};
+  try{
+    var r=await fetch(id?'/api/operatori/'+id:'/api/operatori',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error();cm('mOp');toast(id?'Operatore aggiornato':'Operatore aggiunto');loadAll();
+  }catch(err){toast('Errore salvataggio','err');}
+}
+async function saveMov(){
+  var att=document.getElementById('m-att').value;
+  var cant=document.getElementById('m-cant').value;
+  var op=document.getElementById('m-op').value;
+  var data=document.getElementById('m-data').value;
+  if(!att||!cant||!op||!data){toast('Completa tutti i campi obbligatori','warn');return;}
+  var body={attrezzo_nome:att,cantiere_nome:cant,operatore_nome:op,data_uscita:data,qty:parseInt(document.getElementById('m-qty').value)||1,data_rientro_prev:document.getElementById('m-rprev').value||null,note:document.getElementById('m-note').value.trim()||null};
+  try{
+    var r=await fetch('/api/movimenti',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error();cm('mMov');toast('Uscita registrata');loadAll();
+  }catch(err){toast('Errore salvataggio','err');}
+}
+
+// ── DELETE ────────────────────────────────────────────────────────────────────
+var delUrl='',delType='';
+function opDel(type,id,nome){
+  delUrl='/api/'+{att:'attrezzi',cant:'cantieri',op:'operatori',mov:'movimenti'}[type]+'/'+id;
+  delType=type;
+  document.getElementById('del-n').textContent=nome;
+  sm('mDel');
+}
+async function confDel(){
+  try{
+    var r=await fetch(delUrl,{method:'DELETE'});
+    if(!r.ok)throw new Error();
+    cm('mDel');toast('Eliminato');loadAll();
+  }catch(err){toast('Errore eliminazione','err');}
+}
+
+// ── RIENTRO ───────────────────────────────────────────────────────────────────
+function opRientro(id){
+  var m=movimenti.find(function(x){return x.id===id;});if(!m)return;
+  document.getElementById('r-id').value=id;
+  document.getElementById('r-nome').textContent=(m.attrezzo_nome||'')+(m.cantiere_nome?' → '+m.cantiere_nome:'');
+  document.getElementById('r-data').value=today();
+  sm('mRientro');
+}
+async function confRientro(){
+  var id=document.getElementById('r-id').value;
+  var data=document.getElementById('r-data').value;
+  if(!data){toast('Inserisci la data','warn');return;}
+  try{
+    var r=await fetch('/api/movimenti/'+id+'/rientro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data_rientro_eff:data})});
+    if(!r.ok)throw new Error();
+    cm('mRientro');toast('Rientro registrato');loadAll();
+  }catch(err){toast('Errore','err');}
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function expCSV(){
+  var csv,name;
+  if(curPage==='attrezzi'){
+    var h=['Codice','Nome','Categoria','Marca','Qtà','Stato','Note'].join(',');
+    var rows=attrezzi.map(function(a){return[a.codice,'"'+a.nome+'"',a.categoria,a.marca||'',a.qty_tot,a.stato,'"'+(a.note||'')+'"'].join(',');});
+    csv=[h].concat(rows).join('\n');name='attrezzi';
+  }else{
+    var h2=['ID','Data','Attrezzo','Cantiere','Operatore','Qtà','Rientro Prev.','Rientro Eff.','Stato','Note'].join(',');
+    var rows2=movimenti.map(function(m){return[m.codice,m.data_uscita||'','"'+(m.attrezzo_nome||'')+'"','"'+(m.cantiere_nome||'')+'"','"'+(m.operatore_nome||'')+'"',m.qty,m.data_rientro_prev||'',m.data_rientro_eff||'',m.stato,'"'+(m.note||'')+'"'].join(',');});
+    csv=[h2].concat(rows2).join('\n');name='registro';
+  }
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='ke-'+name+'-'+today()+'.csv';a.click();URL.revokeObjectURL(url);
+  toast('CSV esportato');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+loadAll();
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>
