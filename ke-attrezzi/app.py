@@ -1,6 +1,8 @@
 import os
 import json
 import time
+import base64
+from io import BytesIO
 from datetime import datetime, timedelta
 from functools import wraps
 import psycopg2
@@ -70,6 +72,14 @@ def init_db():
                     ruolo     TEXT DEFAULT 'Operaio Specializzato',
                     telefono  TEXT,
                     created_at TIMESTAMPTZ DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS foto_attrezzi (
+                    id          SERIAL PRIMARY KEY,
+                    attrezzo_id INTEGER REFERENCES attrezzi(id) ON DELETE CASCADE,
+                    nome        TEXT,
+                    data        BYTEA NOT NULL,
+                    mimetype    TEXT DEFAULT 'image/jpeg',
+                    created_at  TIMESTAMPTZ DEFAULT NOW()
                 );
                 CREATE TABLE IF NOT EXISTS movimenti (
                     id           SERIAL PRIMARY KEY,
@@ -530,6 +540,77 @@ def get_stats():
                 "mov_att":mov_att, "cant_att":cant_att,
                 "cats":cats, "cant_mov":cant_mov
             })
+
+# ── API Foto Attrezzi ─────────────────────────────────────────────────────────
+@app.route("/api/foto", methods=["GET"])
+@login_required
+def get_foto():
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""SELECT f.id, f.attrezzo_id, f.nome, f.mimetype, f.created_at,
+                a.codice, a.nome as att_nome FROM foto_attrezzi f
+                LEFT JOIN attrezzi a ON a.id=f.attrezzo_id
+                ORDER BY a.codice, f.id""")
+            rows = []
+            for r in cur.fetchall():
+                row = dict(r)
+                if row.get("created_at"):
+                    row["created_at"] = row["created_at"].isoformat()
+                rows.append(row)
+            return jsonify(rows)
+
+@app.route("/api/foto/<int:fid>/img")
+@login_required
+def get_foto_img(fid):
+    from flask import Response
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT data, mimetype FROM foto_attrezzi WHERE id=%s", (fid,))
+            row = cur.fetchone()
+            if not row:
+                return "", 404
+            return Response(bytes(row["data"]), mimetype=row["mimetype"],
+                headers={"Cache-Control": "public, max-age=86400"})
+
+@app.route("/api/foto", methods=["POST"])
+@login_required
+def upload_foto():
+    if "file" not in request.files:
+        return jsonify({"error": "Nessun file"}), 400
+    f = request.files["file"]
+    att_id = request.form.get("attrezzo_id")
+    if not att_id:
+        return jsonify({"error": "attrezzo_id mancante"}), 400
+    # Resize with Pillow
+    try:
+        from PIL import Image as PILImage
+        img = PILImage.open(f.stream).convert("RGB")
+        img.thumbnail((600, 450), PILImage.LANCZOS)
+        buf = BytesIO()
+        img.save(buf, "JPEG", quality=82)
+        data = buf.getvalue()
+        mime = "image/jpeg"
+    except Exception as e:
+        return jsonify({"error": f"Immagine non valida: {e}"}), 400
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            # Delete existing foto for this attrezzo (1 foto per attrezzo)
+            cur.execute("DELETE FROM foto_attrezzi WHERE attrezzo_id=%s", (att_id,))
+            cur.execute("""INSERT INTO foto_attrezzi (attrezzo_id, nome, data, mimetype)
+                VALUES (%s,%s,%s,%s) RETURNING id""",
+                (att_id, f.filename, psycopg2.Binary(data), mime))
+            fid = cur.fetchone()["id"]
+            conn.commit()
+            return jsonify({"ok": True, "id": fid}), 201
+
+@app.route("/api/foto/<int:fid>", methods=["DELETE"])
+@login_required
+def del_foto(fid):
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM foto_attrezzi WHERE id=%s", (fid,))
+            conn.commit()
+    return jsonify({"ok": True})
 
 if __name__ == "__main__":
     app.run(debug=False)
