@@ -204,6 +204,28 @@ td{padding:10px 14px;font-size:13px;vertical-align:middle}
 mark{background:rgba(78,203,116,0.18);color:var(--t1);border-radius:2px;padding:0 1px}
 @media(max-width:900px){.sidebar{display:none}.topbar{padding:10px 14px}.content{padding:12px 14px}.sgrid{grid-template-columns:repeat(2,1fr)}.dash-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.f2{grid-template-columns:1fr}.sgrid{grid-template-columns:1fr 1fr}}
+
+/* ── CATALOGO FOTO ── */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.cat-card{background:var(--s2);border:1px solid var(--bdr);border-radius:13px;overflow:hidden;transition:all .18s;position:relative}
+.cat-card:hover{border-color:var(--bdh);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.cat-img{width:100%;height:160px;object-fit:cover;display:block;background:var(--s3)}
+.cat-img-placeholder{width:100%;height:160px;display:flex;align-items:center;justify-content:center;background:var(--s3);color:var(--t3)}
+.cat-body{padding:11px 13px 13px}
+.cat-cod{font-family:'DM Mono',monospace;font-size:9px;color:var(--grn);font-weight:500;margin-bottom:3px}
+.cat-nome{font-size:12px;font-weight:600;color:var(--t1);line-height:1.35;margin-bottom:8px}
+.cat-actions{display:flex;gap:6px}
+.cat-upload{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 8px;background:var(--gd);border:1px solid rgba(78,203,116,0.25);border-radius:7px;color:var(--grn);font-size:11px;font-weight:500;cursor:pointer;transition:all .14s}
+.cat-upload:hover{background:rgba(78,203,116,0.2);border-color:rgba(78,203,116,0.5)}
+.cat-upload input{display:none}
+.cat-del{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--bdr);border-radius:7px;color:var(--t3);cursor:pointer;transition:all .14s;flex-shrink:0}
+.cat-del:hover{border-color:var(--red);color:var(--red);background:var(--rd)}
+.cat-search{flex:1;min-width:160px;position:relative}
+.cat-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
+.cat-search input{width:100%;background:var(--s2);border:1px solid var(--bdh);color:var(--t1);padding:8px 12px 8px 32px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.cat-search input:focus{border-color:var(--bdf);box-shadow:0 0 0 3px rgba(78,203,116,0.07)}
+.cat-search input::placeholder{color:var(--t3)}
+.upload-progress{position:absolute;inset:0;background:rgba(8,14,8,0.85);display:flex;align-items:center;justify-content:center;border-radius:13px;font-size:12px;color:var(--grn);font-weight:600;display:none}
 </style>
 </head>
 <body>
@@ -249,6 +271,10 @@ mark{background:rgba(78,203,116,0.18);color:var(--t1);border-radius:2px;padding:
     <button class="ni" onclick="showPage('situazione',this)">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
       Situazione Attuale
+    </button>
+    <button class="ni" onclick="showPage('catalogo',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      Catalogo Foto
     </button>
   </nav>
   <div class="sb-stats" id="sbStats">
@@ -331,6 +357,17 @@ mark{background:rgba(78,203,116,0.18);color:var(--t1);border-radius:2px;padding:
         <div class="reg-head"><div class="reg-th">ID</div><div class="reg-th">Attrezzo</div><div class="reg-th">Cantiere</div><div class="reg-th">Operatore</div><div class="reg-th">Qtà</div><div class="reg-th">Uscita</div><div class="reg-th">Rientro Prev.</div><div class="reg-th">Stato</div><div class="reg-th"></div></div>
         <div id="reg-rows"></div>
       </div>
+    </div>
+
+    <!-- CATALOGO FOTO -->
+    <div class="page" id="p-catalogo">
+      <div class="toolbar" style="margin-bottom:4px">
+        <div class="cat-search">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="cat-q" placeholder="Cerca attrezzo o codice…" oninput="filterCatalogo()">
+        </div>
+      </div>
+      <div class="cat-grid" id="cat-grid"></div>
     </div>
 
     <!-- SITUAZIONE -->
@@ -467,7 +504,7 @@ document.addEventListener('keydown',function(ev){
 });
 
 // ── PAGE NAV ─────────────────────────────────────────────────────────────────
-var pageLabels={dashboard:'Dashboard',attrezzi:'Attrezzi',cantieri:'Cantieri',operatori:'Operatori',registro:'Registro Uscite',situazione:'Situazione Attuale'};
+var pageLabels={dashboard:'Dashboard',attrezzi:'Attrezzi',cantieri:'Cantieri',operatori:'Operatori',registro:'Registro Uscite',situazione:'Situazione Attuale',catalogo:'Catalogo Foto'};
 function showPage(pg,btn){
   curPage=pg;
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('act');});
@@ -475,6 +512,7 @@ function showPage(pg,btn){
   document.querySelectorAll('.ni').forEach(function(b){b.classList.remove('act');});
   if(btn)btn.classList.add('act');
   document.getElementById('bcCur').textContent=pageLabels[pg]||pg;
+  if(pg==='catalogo') loadCatalogo();
   var addBtn=document.getElementById('tbAdd');var expBtn=document.getElementById('tbExp');
   addBtn.style.display=(pg==='situazione'||pg==='dashboard')?'none':'flex';
   expBtn.style.display=(pg==='attrezzi'||pg==='registro')?'flex':'none';
@@ -822,6 +860,93 @@ function expCSV(){
 // ── INIT ─────────────────────────────────────────────────────────────────────
 loadAll();
 setInterval(loadAll, 60000);
+
+// ── CATALOGO FOTO ─────────────────────────────────────────────────────────────
+var _fotoData = [];
+var _attrezziForFoto = [];
+
+async function loadCatalogo() {
+  try {
+    const [fRes, aRes] = await Promise.all([fetch('/api/foto'), fetch('/api/attrezzi')]);
+    _fotoData = await fRes.json();
+    _attrezziForFoto = await aRes.json();
+    renderCatalogo();
+  } catch(e) { console.error('catalogo error', e); }
+}
+
+function filterCatalogo() {
+  renderCatalogo();
+}
+
+function renderCatalogo() {
+  var q = (document.getElementById('cat-q')?.value || '').toLowerCase();
+  var grid = document.getElementById('cat-grid');
+  if (!grid) return;
+
+  // Build foto map by attrezzo_id
+  var fotoMap = {};
+  _fotoData.forEach(function(f) { fotoMap[f.attrezzo_id] = f; });
+
+  var list = _attrezziForFoto.filter(function(a) {
+    if (!q) return true;
+    return a.nome.toLowerCase().includes(q) || a.codice.toLowerCase().includes(q);
+  });
+
+  grid.innerHTML = list.map(function(a) {
+    var f = fotoMap[a.id];
+    var imgHtml = f
+      ? '<img class="cat-img" src="/api/foto/'+f.id+'/img" alt="'+escHtml(a.nome)+'" loading="lazy">'
+      : '<div class="cat-img-placeholder"><svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+    var delBtn = f
+      ? '<button class="cat-del" onclick="deleteFoto('+f.id+','+a.id+')" title="Rimuovi foto"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>'
+      : '';
+    return '<div class="cat-card" id="cc-'+a.id+'">'
+      + '<div class="upload-progress" id="up-'+a.id+'">⏳ Caricamento…</div>'
+      + imgHtml
+      + '<div class="cat-body">'
+      + '<div class="cat-cod">'+escHtml(a.codice)+'</div>'
+      + '<div class="cat-nome">'+escHtml(a.nome)+'</div>'
+      + '<div class="cat-actions">'
+      + '<label class="cat-upload"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'
+      + (f ? 'Cambia' : 'Carica foto')
+      + '<input type="file" accept="image/*" onchange="uploadFoto(this,'+a.id+')">'
+      + '</label>'
+      + delBtn
+      + '</div></div></div>';
+  }).join('');
+}
+
+async function uploadFoto(input, attId) {
+  if (!input.files || !input.files[0]) return;
+  var prog = document.getElementById('up-'+attId);
+  if (prog) prog.style.display = 'flex';
+  var fd = new FormData();
+  fd.append('file', input.files[0]);
+  fd.append('attrezzo_id', attId);
+  try {
+    var r = await fetch('/api/foto', {method:'POST', body:fd});
+    if (!r.ok) throw new Error('Upload fallito');
+    toast('Foto caricata ✓', 'ok');
+    await loadCatalogo();
+  } catch(e) {
+    toast('Errore upload: '+e.message, 'err');
+  } finally {
+    if (prog) prog.style.display = 'none';
+    input.value = '';
+  }
+}
+
+async function deleteFoto(fid, attId) {
+  if (!confirm('Rimuovere la foto?')) return;
+  await fetch('/api/foto/'+fid, {method:'DELETE'});
+  toast('Foto rimossa', 'ok');
+  await loadCatalogo();
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 </script>
 </body>
 </html>
